@@ -95,6 +95,13 @@ public class LayoutAdapter {
             execute(async, null);
         }
 
+        /**
+         * 执行
+         *
+         * @param async    是否异步, true 时会在 config 的
+         * @param callback 在所有属性均应用到 View 后, 在主线程上回调
+         *                 注意此时动画可能还未结束 (一般是刚刚开始)
+         */
         public void execute(boolean async, Runnable callback) {
             this.async = async;
             this.callback = callback;

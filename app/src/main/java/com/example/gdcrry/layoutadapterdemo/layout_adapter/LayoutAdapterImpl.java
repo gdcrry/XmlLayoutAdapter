@@ -164,7 +164,7 @@ class LayoutAdapterImpl {
 
     private void animateApplyToViews(LayoutAdapter.Config config, SparseArray<ViewInfoData> sparseArray) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && config.animate) {
-            TransitionManager.beginDelayedTransition(config.parent);
+            TransitionManager.beginDelayedTransition(config.parent, config.transition);
         }
         applyToViews(config.parent, sparseArray);
     }
