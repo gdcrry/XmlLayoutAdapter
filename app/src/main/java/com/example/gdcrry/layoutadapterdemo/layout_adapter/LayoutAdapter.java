@@ -2,6 +2,8 @@ package com.example.gdcrry.layoutadapterdemo.layout_adapter;
 
 import android.content.res.Resources;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.transition.Transition;
 import android.view.ViewGroup;
 
@@ -31,7 +33,7 @@ public class LayoutAdapter {
     private LayoutAdapter() {
     }
 
-    public static void config(Executor executor, ErrorHandler errorHandler) {
+    public static void config(@NonNull Executor executor, @Nullable ErrorHandler errorHandler) {
         get().asyncExecutor = executor;
         get().errorHandler = errorHandler;
     }
@@ -74,12 +76,6 @@ public class LayoutAdapter {
             return this;
         }
 
-        public Config async(Runnable callback) {
-            this.async = true;
-            this.callback = callback;
-            return this;
-        }
-
         public Config animate() {
             this.animate = true;
             return this;
@@ -92,6 +88,16 @@ public class LayoutAdapter {
         }
 
         public void execute() {
+            execute(false);
+        }
+
+        public void execute(boolean async) {
+            execute(async, null);
+        }
+
+        public void execute(boolean async, Runnable callback) {
+            this.async = async;
+            this.callback = callback;
             LayoutAdapterImpl.getInstance().apply(this);
         }
     }
