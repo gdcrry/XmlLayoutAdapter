@@ -10,7 +10,7 @@ import android.transition.TransitionSet;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.example.gdcrry.layoutadapterdemo.layout_adapter.LayoutAdapter;
+import com.example.gdcrry.layoutadapterdemo.layout_adapter.XmlLayoutAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,31 +20,37 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        LayoutAdapter.config(command -> new Thread(command).start(), Throwable::printStackTrace);
+        XmlLayoutAdapter.config(command -> new Thread(command).start(), Throwable::printStackTrace);
         ViewGroup root = findViewById(R.id.root_view_group);
-        findViewById(R.id.btn_1).setOnClickListener(v -> LayoutAdapter.of(getResources())
+        findViewById(R.id.btn_1).setOnClickListener(v -> XmlLayoutAdapter.of(getResources())
                 .apply(R.layout.activity_main_scene_1)
-                .to(root).animate().execute());
-        findViewById(R.id.btn_2).setOnClickListener(v -> LayoutAdapter.of(getResources())
+                .to(root)
+                .animate()
+                .execute());
+        findViewById(R.id.btn_2).setOnClickListener(v -> XmlLayoutAdapter.of(getResources())
                 .apply(R.layout.activity_main_scene_2)
-                .to(root).animate().execute(true));
-        findViewById(R.id.btn_3).setOnClickListener(v -> LayoutAdapter.of(getResources())
+                .to(root)
+                .animate(300)
+                .execute(true));
+        findViewById(R.id.btn_3).setOnClickListener(v -> XmlLayoutAdapter.of(getResources())
                 .apply(R.layout.activity_main_scene_3)
-                .to(root).animate().execute(true));
-        findViewById(R.id.btn_4).setOnClickListener(v -> LayoutAdapter.of(getResources())
+                .to(root)
+                .animate(700)
+                .execute(true));
+        findViewById(R.id.btn_4).setOnClickListener(v -> XmlLayoutAdapter.of(getResources())
                 .apply(R.layout.activity_main)
-                .to(root).animate(new TransitionSet() {
-                    {
-                        setOrdering(ORDERING_TOGETHER);
-                        addTransition(new Fade()).
-                                addTransition(new ChangeBounds());
-                    }
-                }).execute(true, () -> Toast.makeText(this, "Transition done!", Toast.LENGTH_SHORT).show()));
+                .to(root)
+                .animate(new TransitionSet()
+                        .addTransition(new Fade())
+                        .addTransition(new ChangeBounds())
+                        .setOrdering(TransitionSet.ORDERING_TOGETHER)
+                        .setDuration(1000)
+                ).execute(true, () -> Toast.makeText(this, "Transition done!", Toast.LENGTH_SHORT).show()));
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        LayoutAdapter.release();
+        XmlLayoutAdapter.release();
     }
 }

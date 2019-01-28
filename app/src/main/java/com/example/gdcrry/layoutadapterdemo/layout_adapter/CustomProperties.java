@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import android.view.View;
 
 import com.example.gdcrry.layoutadapterdemo.layout_adapter.properties.AlphaProperty;
-import com.example.gdcrry.layoutadapterdemo.layout_adapter.properties.BackgroundProperty;
 import com.example.gdcrry.layoutadapterdemo.layout_adapter.properties.OrientationProperty;
 import com.example.gdcrry.layoutadapterdemo.layout_adapter.properties.RotationProperty;
 import com.example.gdcrry.layoutadapterdemo.layout_adapter.properties.TextProperty;
@@ -47,11 +46,10 @@ public final class CustomProperties {
 
     CustomProperties() {
         registerProperty(new VisibilityProperty());
-        registerProperty(new OrientationProperty());
         registerProperty(new AlphaProperty());
-        registerProperty(new TextProperty());
+        registerProperty(new OrientationProperty());
         registerProperty(new RotationProperty());
-        registerProperty(new BackgroundProperty());
+        registerProperty(new TextProperty());
     }
 
     void generateCustomProperties(XmlResourceParser parser) throws Exception {
