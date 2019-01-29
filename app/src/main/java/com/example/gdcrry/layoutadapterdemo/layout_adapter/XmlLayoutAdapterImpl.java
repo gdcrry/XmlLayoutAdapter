@@ -48,7 +48,7 @@ class XmlLayoutAdapterImpl {
             if (sparseArray == null) {
                 sparseArray = new SparseArray<>();
                 try {
-                    generate(config, config.parent, parser, sparseArray);
+                    generate(config, config.parent, parser, sparseArray, 0);
                 } catch (XmlPullParserException | IOException e) {
                     if (config.errorHandler != null) {
                         config.errorHandler.onException(e);
@@ -83,32 +83,22 @@ class XmlLayoutAdapterImpl {
         instance = null;
     }
 
-    private void generate(XmlLayoutAdapter.Config config, ViewGroup parent, XmlResourceParser parser, SparseArray<ViewInfoData> sparseArray)
+    private boolean generate(XmlLayoutAdapter.Config config, ViewGroup parent, XmlResourceParser parser, SparseArray<ViewInfoData> sparseArray, int level)
             throws XmlPullParserException, IOException {
         int state;
-        int level = 1;
+        int minLevel = level;
+        boolean hasChild = false;
         do {
             state = parser.next();
             switch (state) {
-                case XmlPullParser.START_DOCUMENT:
-                    int id = getIdAttributeResourceValue(parser);
-                    if (id > 0 && !config.ignoreChildIdSet.contains(id)) {
-                        ViewInfoData data = new ViewInfoData();
-                        try {
-                            data.customProperties.generateCustomProperties(parser);
-                        } catch (Exception e) {
-                            if (config.errorHandler != null) {
-                                config.errorHandler.onException(e);
-                            }
-                        }
-                        sparseArray.put(id, data);
-                    }
-                    break;
                 case XmlPullParser.START_TAG:
                     int childId = getIdAttributeResourceValue(parser);
                     if (childId > 0) {
+                        hasChild = true;
                         ViewInfoData data = new ViewInfoData();
-                        data.layoutParams = parent.generateLayoutParams(parser);
+                        if (level > 0) {
+                            data.layoutParams = parent.generateLayoutParams(parser);
+                        }
                         try {
                             data.customProperties.generateCustomProperties(parser);
                         } catch (Exception e) {
@@ -116,11 +106,10 @@ class XmlLayoutAdapterImpl {
                                 config.errorHandler.onException(e);
                             }
                         }
-                        sparseArray.put(childId, data);
                         try {
                             View newParent = parent.findViewById(childId);
                             if (shouldGenerateChild(newParent)) {
-                                generate(config, (ViewGroup) newParent, parser, sparseArray);
+                                data.hasChild = generate(config, (ViewGroup) newParent, parser, sparseArray, level + 1);
                                 level--;
                             }
                         } catch (Exception e) {
@@ -128,17 +117,19 @@ class XmlLayoutAdapterImpl {
                                 config.errorHandler.onException(e);
                             }
                         }
+                        sparseArray.put(childId, data);
                     }
                     level++;
                     break;
                 case XmlPullParser.END_TAG:
-                    if (--level <= 0) {
-                        return;
+                    if (--level < minLevel) {
+                        return hasChild;
                     }
                     break;
                 default:
             }
         } while (state != XmlPullParser.END_DOCUMENT);
+        return false;
     }
 
     private void applyToViews(XmlLayoutAdapter.Config config, ViewGroup parent, SparseArray<ViewInfoData> sparseArray) {
@@ -152,9 +143,9 @@ class XmlLayoutAdapterImpl {
             if (data != null) {
                 child.setLayoutParams(data.layoutParams);
                 data.customProperties.applyAll(child);
-            }
-            if (child instanceof ViewGroup) {
-                applyToViews(config, (ViewGroup) child, sparseArray);
+                if (data.hasChild) {
+                    applyToViews(config, (ViewGroup) child, sparseArray);
+                }
             }
         }
     }
@@ -190,14 +181,12 @@ class XmlLayoutAdapterImpl {
     }
 
     private static boolean shouldGenerateChild(View view) {
-        if (view instanceof AbsListView) {
-            return false;
-        }
         return view instanceof ViewGroup;
     }
 
     private static class ViewInfoData {
         private ViewGroup.LayoutParams layoutParams;
         private CustomProperties customProperties = new CustomProperties();
+        private boolean hasChild;
     }
 }
